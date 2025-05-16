@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Álgebra Lineal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Fondo gris azulado claro */
+        }
+        .calculator-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .input-field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            outline: none;
+        }
+        .operation-button {
+            background-color: #3b82f6; /* Botón azul */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .operation-button:hover {
+            background-color: #2563eb; /* Azul más oscuro al pasar el mouse */
+        }
+        .clear-button {
+            background-color: #ef4444; /* Botón rojo */
+            color: white;
+        }
+        .clear-button:hover {
+            background-color: #dc2626; /* Rojo más oscuro al pasar el mouse */
+        }
+        .result-area {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            min-height: 60px;
+            white-space: pre-wrap; /* Conservar formato */
+            font-family: monospace;
+            color: #1f2937;
+        }
+        .error-message {
+            color: #ef4444; /* Rojo para mensajes de error */
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+        .result-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        .result-area::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 0.5rem;
+        }
+        .result-area::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 0.5rem;
+        }
+        .result-area::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800">Calculadora de Álgebra Lineal</h1>
+        </header>
+
+        <section id="vector-operations" class="calculator-section">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">Operaciones con Vectores</h2>
+            <div>
+                <label for="vectorA" class="input-label">Vector A (ej: 1,2,3):</label>
+                <input type="text" id="vectorA" class="input-field" placeholder="Ingrese elementos separados por comas">
+            </div>
+            <div>
+                <label for="vectorB" class="input-label">Vector B (ej: 4,5,6):</label>
+                <input type="text" id="vectorB" class="input-field" placeholder="Ingrese elementos separados por comas">
+            </div>
+             <div>
+                <label for="scalarV" class="input-label">Escalar (para multiplicación):</label>
+                <input type="text" id="scalarV" class="input-field" placeholder="Ingrese un número escalar">
+            </div>
+            <div class="flex flex-wrap">
+                <button onclick="performVectorOperation('add')" class="operation-button">A + B</button>
+                <button onclick="performVectorOperation('subtract')" class="operation-button">A - B</button>
+                <button onclick="performVectorOperation('dot')" class="operation-button">Producto Punto (A · B)</button>
+                <button onclick="performVectorOperation('cross')" class="operation-button">Producto Cruz (A x B)</button>
+                <button onclick="performVectorOperation('scalar_multiply_A')" class="operation-button">Escalar * A</button>
+                <button onclick="performVectorOperation('scalar_multiply_B')" class="operation-button">Escalar * B</button>
+                <button onclick="performVectorOperation('magnitude_A')" class="operation-button">Magnitud ||A||</button>
+                <button onclick="performVectorOperation('magnitude_B')" class="operation-button">Magnitud ||B||</button>
+            </div>
+            <button onclick="clearVectorInputs()" class="operation-button clear-button mt-4">Limpiar Entradas de Vectores</button>
+            <div id="vectorResult" class="result-area">El resultado de la operación vectorial aparecerá aquí.</div>
+            <div id="vectorError" class="error-message"></div>
+        </section>
+
+        <section id="matrix-operations" class="calculator-section">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">Operaciones con Matrices</h2>
+            <div>
+                <label for="matrixA" class="input-label">Matriz A (ej: 1,2;3,4 - filas separadas por ';')</label>
+                <textarea id="matrixA" class="input-field" rows="3" placeholder="Ej: 1,2,3; 4,5,6; 7,8,9"></textarea>
+            </div>
+            <div>
+                <label for="matrixB" class="input-label">Matriz B (ej: 5,6;7,8 - filas separadas por ';')</label>
+                <textarea id="matrixB" class="input-field" rows="3" placeholder="Ej: 9,8,7; 6,5,4; 3,2,1"></textarea>
+            </div>
+            <div>
+                <label for="scalarM" class="input-label">Escalar (para multiplicación):</label>
+                <input type="text" id="scalarM" class="input-field" placeholder="Ingrese un número escalar">
+            </div>
+            <div class="flex flex-wrap">
+                <button onclick="performMatrixOperation('add')" class="operation-button">A + B</button>
+                <button onclick="performMatrixOperation('subtract')" class="operation-button">A - B</button>
+                <button onclick="performMatrixOperation('multiply')" class="operation-button">A * B</button>
+                <button onclick="performMatrixOperation('scalar_multiply_A')" class="operation-button">Escalar * A</button>
+                <button onclick="performMatrixOperation('scalar_multiply_B')" class="operation-button">Escalar * B</button>
+                <button onclick="performMatrixOperation('transpose_A')" class="operation-button">Transpuesta A<sup>T</sup></button>
+                <button onclick="performMatrixOperation('transpose_B')" class="operation-button">Transpuesta B<sup>T</sup></button>
+                <button onclick="performMatrixOperation('determinant_A')" class="operation-button">det(A)</button>
+                <button onclick="performMatrixOperation('determinant_B')" class="operation-button">det(B)</button>
+                <button onclick="performMatrixOperation('inverse_A')" class="operation-button">Inversa A<sup>-1</sup></button>
+                <button onclick="performMatrixOperation('inverse_B')" class="operation-button">Inversa B<sup>-1</sup></button>
+            </div>
+             <button onclick="clearMatrixInputs()" class="operation-button clear-button mt-4">Limpiar Entradas de Matrices</button>
+            <div id="matrixResult" class="result-area">El resultado de la operación matricial aparecerá aquí.</div>
+            <div id="matrixError" class="error-message"></div>
+        </section>
+
+        <footer class="text-center mt-12 mb-6">
+            <p class="text-gray-600">Calculadora de Álgebra Lineal - Versión 1.1</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Funciones de Ayuda para Parseo y Display ---
+        function parseVector(vectorStr) {
+            if (!vectorStr) return null;
+            const parsed = vectorStr.split(',').map(item => parseFloat(item.trim()));
+            if (parsed.some(isNaN)) return null; // Si algún elemento no es un número después del parseo
+            return parsed;
+        }
+
+        function parseMatrix(matrixStr) {
+            if (!matrixStr) return null;
+            const rows = matrixStr.split(';');
+            if (rows.length === 0) return null;
+
+            const matrix = rows.map(rowStr =>
+                rowStr.split(',').map(item => parseFloat(item.trim()))
+            );
+
+            if (matrix.some(row => row.some(isNaN) || row.length === 0)) return null;
+
+            const firstRowLength = matrix[0].length;
+            if (matrix.some(row => row.length !== firstRowLength)) return null;
+            return matrix;
+        }
+
+        function formatVector(vector) {
+            if (!Array.isArray(vector)) return "Entrada inválida para formatear vector.";
+            return `[${vector.join(', ')}]`;
+        }
+
+        function formatMatrix(matrix) {
+            if (!Array.isArray(matrix) || !Array.isArray(matrix[0])) return "Entrada inválida para formatear matriz.";
+            return matrix.map(row => `[${row.join(',\t')}]`).join('\n');
+        }
+
+        function displayVectorResult(result, error = null) {
+            const resultEl = document.getElementById('vectorResult');
+            const errorEl = document.getElementById('vectorError');
+            if (error) {
+                resultEl.textContent = '';
+                errorEl.textContent = error;
+            } else {
+                if (typeof result === 'number') {
+                    resultEl.textContent = result.toString();
+                } else if (Array.isArray(result)) {
+                    resultEl.textContent = formatVector(result);
+                } else {
+                    resultEl.textContent = 'Resultado inesperado.';
+                }
+                errorEl.textContent = '';
+            }
+        }
+
+        function displayMatrixResult(result, error = null) {
+            const resultEl = document.getElementById('matrixResult');
+            const errorEl = document.getElementById('matrixError');
+             if (error) {
+                resultEl.textContent = '';
+                errorEl.textContent = error;
+            } else {
+                if (typeof result === 'number') {
+                    resultEl.textContent = result.toString();
+                } else if (Array.isArray(result) && Array.isArray(result[0])) {
+                    resultEl.textContent = formatMatrix(result);
+                } else {
+                     resultEl.textContent = 'Resultado inesperado.';
+                }
+                errorEl.textContent = '';
+            }
+        }
+
+        function clearVectorInputs() {
+            document.getElementById('vectorA').value = '';
+            document.getElementById('vectorB').value = '';
+            document.getElementById('scalarV').value = '';
+            displayVectorResult(null, ''); // Limpia el resultado y cualquier error
+            document.getElementById('vectorResult').textContent = 'El resultado de la operación vectorial aparecerá aquí.';
+        }
+
+        function clearMatrixInputs() {
+            document.getElementById('matrixA').value = '';
+            document.getElementById('matrixB').value = '';
+            document.getElementById('scalarM').value = '';
+            displayMatrixResult(null, ''); // Limpia el resultado y cualquier error
+            document.getElementById('matrixResult').textContent = 'El resultado de la operación matricial aparecerá aquí.';
+        }
+
+        // --- Lógica de Operaciones Vectoriales ---
+        function performVectorOperation(operation) {
+            const vecAStr = document.getElementById('vectorA').value;
+            const vecBStr = document.getElementById('vectorB').value;
+            const scalarStr = document.getElementById('scalarV').value;
+
+            const vA = parseVector(vecAStr);
+            const vB = parseVector(vecBStr);
+            const scalar = parseFloat(scalarStr);
+
+            try {
+                let result;
+                switch (operation) {
+                    case 'add':
+                        if (!vA || !vB) throw new Error("Ambos vectores A y B son necesarios y deben ser válidos.");
+                        if (vA.length !== vB.length) throw new Error("Los vectores deben tener la misma dimensión para sumar.");
+                        result = vA.map((val, i) => val + vB[i]);
+                        break;
+                    case 'subtract':
+                        if (!vA || !vB) throw new Error("Ambos vectores A y B son necesarios y deben ser válidos.");
+                        if (vA.length !== vB.length) throw new Error("Los vectores deben tener la misma dimensión para restar.");
+                        result = vA.map((val, i) => val - vB[i]);
+                        break;
+                    case 'dot':
+                        if (!vA || !vB) throw new Error("Ambos vectores A y B son necesarios y deben ser válidos.");
+                        if (vA.length !== vB.length) throw new Error("Los vectores deben tener la misma dimensión para el producto punto.");
+                        result = vA.reduce((sum, val, i) => sum + (val * vB[i]), 0);
+                        break;
+                    case 'cross':
+                        if (!vA || !vB) throw new Error("Ambos vectores A y B son necesarios y deben ser válidos.");
+                        if (vA.length !== 3 || vB.length !== 3) throw new Error("El producto cruz solo está definido para vectores de 3 dimensiones.");
+                        result = [
+                            vA[1] * vB[2] - vA[2] * vB[1],
+                            vA[2] * vB[0] - vA[0] * vB[2],
+                            vA[0] * vB[1] - vA[1] * vB[0]
+                        ];
+                        break;
+                    case 'scalar_multiply_A':
+                        if (!vA) throw new Error("Vector A es necesario y debe ser válido.");
+                        if (isNaN(scalar)) throw new Error("Escalar inválido.");
+                        result = vA.map(val => val * scalar);
+                        break;
+                    case 'scalar_multiply_B':
+                        if (!vB) throw new Error("Vector B es necesario y debe ser válido.");
+                        if (isNaN(scalar)) throw new Error("Escalar inválido.");
+                        result = vB.map(val => val * scalar);
+                        break;
+                    case 'magnitude_A':
+                        if (!vA) throw new Error("Vector A es necesario y debe ser válido.");
+                        result = Math.sqrt(vA.reduce((sum, val) => sum + (val * val), 0));
+                        break;
+                    case 'magnitude_B':
+                        if (!vB) throw new Error("Vector B es necesario y debe ser válido.");
+                        result = Math.sqrt(vB.reduce((sum, val) => sum + (val * val), 0));
+                        break;
+                    default:
+                        throw new Error("Operación vectorial no reconocida.");
+                }
+                displayVectorResult(result);
+            } catch (e) {
+                displayVectorResult(null, `Error: ${e.message}`);
+            }
+        }
+
+        // --- Lógica de Operaciones Matriciales ---
+        function performMatrixOperation(operation) {
+            const matAStr = document.getElementById('matrixA').value;
+            const matBStr = document.getElementById('matrixB').value;
+            const scalarStrM = document.getElementById('scalarM').value;
+
+            let mA = null;
+            let mB = null;
+            let scalarM = parseFloat(scalarStrM); // NaN si está vacío o no es número
+
+            // Parsear solo si la operación lo requiere para evitar errores innecesarios
+            if (operation.includes('_A') || operation === 'add' || operation === 'subtract' || operation === 'multiply' || operation === 'determinant_A' || operation === 'inverse_A' || operation === 'transpose_A') {
+                 mA = parseMatrix(matAStr);
+            }
+            if (operation.includes('_B') || operation === 'add' || operation === 'subtract' || operation === 'multiply' || operation === 'determinant_B' || operation === 'inverse_B' || operation === 'transpose_B') {
+                 mB = parseMatrix(matBStr);
+            }
+
+
+            try {
+                let result;
+                switch (operation) {
+                    case 'add':
+                        if (!mA || !mB) throw new Error("Ambas matrices A y B son necesarias y deben ser válidas.");
+                        if (mA.length !== mB.length || mA[0].length !== mB[0].length) throw new Error("Las matrices deben tener las mismas dimensiones para sumar.");
+                        result = mA.map((row, i) => row.map((val, j) => val + mB[i][j]));
+                        break;
+                    case 'subtract':
+                        if (!mA || !mB) throw new Error("Ambas matrices A y B son necesarias y deben ser válidas.");
+                        if (mA.length !== mB.length || mA[0].length !== mB[0].length) throw new Error("Las matrices deben tener las mismas dimensiones para restar.");
+                        result = mA.map((row, i) => row.map((val, j) => val - mB[i][j]));
+                        break;
+                    case 'multiply':
+                        if (!mA || !mB) throw new Error("Ambas matrices A y B son necesarias y deben ser válidas.");
+                        if (mA[0].length !== mB.length) throw new Error("El número de columnas de A debe ser igual al número de filas de B para multiplicar.");
+                        result = [];
+                        for (let i = 0; i < mA.length; i++) {
+                            result[i] = [];
+                            for (let j = 0; j < mB[0].length; j++) {
+                                let sum = 0;
+                                for (let k = 0; k < mA[0].length; k++) {
+                                    sum += mA[i][k] * mB[k][j];
+                                }
+                                result[i][j] = sum;
+                            }
+                        }
+                        break;
+                    case 'scalar_multiply_A':
+                        if (!mA) throw new Error("Matriz A es necesaria y debe ser válida.");
+                        if (isNaN(scalarM)) throw new Error("Escalar inválido.");
+                        result = mA.map(row => row.map(val => val * scalarM));
+                        break;
+                    case 'scalar_multiply_B':
+                        if (!mB) throw new Error("Matriz B es necesaria y debe ser válida.");
+                        if (isNaN(scalarM)) throw new Error("Escalar inválido.");
+                        result = mB.map(row => row.map(val => val * scalarM));
+                        break;
+                    case 'transpose_A':
+                        if (!mA) throw new Error("Matriz A es necesaria y debe ser válida.");
+                        result = mA[0].map((_, colIndex) => mA.map(row => row[colIndex]));
+                        break;
+                    case 'transpose_B':
+                        if (!mB) throw new Error("Matriz B es necesaria y debe ser válida.");
+                        result = mB[0].map((_, colIndex) => mB.map(row => row[colIndex]));
+                        break;
+                    case 'determinant_A':
+                        if (!mA) throw new Error("Matriz A es necesaria y debe ser válida.");
+                        result = calculateDeterminant(mA);
+                        break;
+                    case 'determinant_B':
+                        if (!mB) throw new Error("Matriz B es necesaria y debe ser válida.");
+                        result = calculateDeterminant(mB);
+                        break;
+                    case 'inverse_A':
+                        if (!mA) throw new Error("Matriz A es necesaria y debe ser válida.");
+                        result = calculateInverse(mA);
+                        break;
+                    case 'inverse_B':
+                        if (!mB) throw new Error("Matriz B es necesaria y debe ser válida.");
+                        result = calculateInverse(mB);
+                        break;
+                    default:
+                        throw new Error("Operación matricial no reconocida.");
+                }
+                displayMatrixResult(result);
+            } catch (e) {
+                displayMatrixResult(null, `Error: ${e.message}`);
+            }
+        }
+
+        // Calcula el determinante de una matriz (1x1, 2x2, o 3x3)
+        function calculateDeterminant(matrix) {
+            if (!matrix || matrix.length === 0 || matrix.length !== matrix[0].length) {
+                throw new Error("La matriz debe ser cuadrada para calcular el determinante.");
+            }
+            const n = matrix.length;
+
+            if (n === 1) return matrix[0][0];
+            if (n === 2) return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+            if (n === 3) {
+                return matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1]) -
+                       matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0]) +
+                       matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]);
+            }
+            throw new Error("El cálculo de determinante para matrices > 3x3 no está implementado en esta versión.");
+        }
+
+        // Calcula la inversa de una matriz (2x2 o 3x3)
+        function calculateInverse(matrix) {
+            if (!matrix || matrix.length === 0 || matrix.length !== matrix[0].length) {
+                throw new Error("La matriz debe ser cuadrada para calcular la inversa.");
+            }
+            const n = matrix.length;
+            const det = calculateDeterminant(matrix);
+
+            if (Math.abs(det) < 1e-10) { // Considerar determinante cero si es muy pequeño
+                throw new Error("La matriz es singular (determinante es cero) y no tiene inversa.");
+            }
+
+            if (n === 1) return [[1/det]]; // No debería llegar aquí si det es 0, pero por completitud
+
+            if (n === 2) {
+                return [
+                    [matrix[1][1] / det, -matrix[0][1] / det],
+                    [-matrix[1][0] / det, matrix[0][0] / det]
+                ];
+            }
+
+            if (n === 3) {
+                const cofactors = [];
+                for (let r = 0; r < n; r++) {
+                    cofactors[r] = [];
+                    for (let c = 0; c < n; c++) {
+                        const minor = getMinor(matrix, r, c);
+                        cofactors[r][c] = ((r + c) % 2 === 0 ? 1 : -1) * calculateDeterminant(minor);
+                    }
+                }
+
+                const adjugate = cofactors[0].map((_, colIndex) => cofactors.map(row => row[colIndex])); // Transponer cofactores
+
+                return adjugate.map(row => row.map(val => val / det));
+            }
+            throw new Error("El cálculo de inversa para matrices > 3x3 no está implementado en esta versión.");
+        }
+
+        // Función auxiliar para obtener la submatriz menor
+        function getMinor(matrix, rowToRemove, colToRemove) {
+            return matrix
+                .filter((_, rowIndex) => rowIndex !== rowToRemove)
+                .map(row => row.filter((_, colIndex) => colIndex !== colToRemove));
+        }
+
+    </script>
+</body>
+</html>
